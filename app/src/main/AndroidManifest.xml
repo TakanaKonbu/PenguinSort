@@ -15,11 +15,12 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="landscape"
             android:label="@string/app_name"
-            android:theme="@style/Theme.PenguinSort">
+            android:theme="@style/Theme.PenguinSort"
+            tools:ignore="DiscouragedApi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
