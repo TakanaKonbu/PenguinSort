@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,15 +28,30 @@ fun GameScreen() {
     var gameState by remember { mutableStateOf(GameState()) }
 
     // ゲーム開始時の初期化
-    LaunchedEffect(Unit) {
+    fun initializeGame() {
         val randomPenguins = PenguinType.entries.shuffled().take(3)
         gameState = gameState.copy(
             targetPenguins = randomPenguins,
             shuffledPenguins = randomPenguins.shuffled(),
-            gamePhase = GamePhase.SHOWING
+            selectedPenguins = emptyList(),
+            gamePhase = GamePhase.SHOWING,
+            isGameOver = false
         )
+    }
+
+    // 初回のゲーム開始
+    LaunchedEffect(Unit) {
+        initializeGame()
         delay(3000)
         gameState = gameState.copy(gamePhase = GamePhase.PLAYING)
+    }
+
+    // 3秒表示後にプレイフェーズへ移行
+    LaunchedEffect(gameState.gamePhase) {
+        if (gameState.gamePhase == GamePhase.SHOWING && !gameState.isGameOver) {
+            delay(3000)
+            gameState = gameState.copy(gamePhase = GamePhase.PLAYING)
+        }
     }
 
     // ペンギンをタップしたときの処理
@@ -52,11 +68,20 @@ fun GameScreen() {
 
             // すべて選択完了した場合
             if (newSelectedPenguins.size == gameState.targetPenguins.size) {
-                gameState = gameState.copy(gamePhase = GamePhase.SHOWING)
+                val randomPenguins = PenguinType.entries.shuffled().take(3)
+                gameState = gameState.copy(
+                    targetPenguins = randomPenguins,
+                    shuffledPenguins = randomPenguins.shuffled(),
+                    selectedPenguins = emptyList(),
+                    gamePhase = GamePhase.SHOWING
+                )
             }
         } else {
             // 不正解の場合
-            gameState = gameState.copy(gamePhase = GamePhase.GAME_OVER)
+            gameState = gameState.copy(
+                gamePhase = GamePhase.GAME_OVER,
+                isGameOver = true
+            )
         }
     }
 
@@ -98,7 +123,7 @@ fun GameScreen() {
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),  // 中央揃えで8dpの間隔
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
             ) {
                 gameState.selectedPenguins.forEach { penguin ->
                     Image(
@@ -145,12 +170,29 @@ fun GameScreen() {
                     .background(Color.Black.copy(alpha = 0.7f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "ゲームオーバー",
-                    color = Color.White,
-                    fontSize = 32.sp,
-                    textAlign = TextAlign.Center
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(32.dp)
+                ) {
+                    Text(
+                        text = "ゲームオーバー",
+                        color = Color.White,
+                        fontSize = 32.sp,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Button(
+                        onClick = { initializeGame() },
+                        modifier = Modifier
+                            .width(200.dp)
+                            .height(60.dp)
+                    ) {
+                        Text(
+                            text = "リトライ",
+                            fontSize = 20.sp
+                        )
+                    }
+                }
             }
         }
     }
