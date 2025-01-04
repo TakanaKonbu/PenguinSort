@@ -5,10 +5,21 @@ import androidx.compose.runtime.*
 @Composable
 fun MainScreen() {
     var gameStarted by remember { mutableStateOf(false) }
+    var retryFromGameOver by remember { mutableStateOf(false) }
 
-    if (gameStarted) {
-        GameScreen()
+    if (gameStarted && !retryFromGameOver) {
+        GameScreen(
+            onRetry = {
+                gameStarted = false
+                retryFromGameOver = true
+            }
+        )
     } else {
-        StartScreen(onStartClick = { gameStarted = true })
+        StartScreen(
+            onStartClick = {
+                gameStarted = true
+                retryFromGameOver = false
+            }
+        )
     }
 }

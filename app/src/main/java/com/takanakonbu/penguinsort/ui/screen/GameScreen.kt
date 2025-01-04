@@ -24,7 +24,9 @@ import com.takanakonbu.penguinsort.ui.theme.PrimaryColor
 import kotlinx.coroutines.delay
 
 @Composable
-fun GameScreen() {
+fun GameScreen(
+    onRetry: () -> Unit = {}
+) {
     val context = LocalContext.current
     var gameState by remember { mutableStateOf(GameState()) }
 
@@ -183,7 +185,7 @@ fun GameScreen() {
                     )
 
                     Button(
-                        onClick = { initializeGame() },
+                        onClick = { onRetry() },
                         modifier = Modifier
                             .width(200.dp)
                             .height(60.dp),
