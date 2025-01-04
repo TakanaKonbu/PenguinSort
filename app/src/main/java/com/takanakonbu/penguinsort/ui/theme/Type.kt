@@ -6,6 +6,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+// ゴシック体のフォントファミリーを定義
+val GothicFontFamily = FontFamily.Default  // デフォルトのゴシック体を使用
+
 // Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(

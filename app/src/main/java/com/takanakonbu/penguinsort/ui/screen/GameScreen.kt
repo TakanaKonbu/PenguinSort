@@ -20,6 +20,7 @@ import com.takanakonbu.penguinsort.R
 import com.takanakonbu.penguinsort.model.PenguinType
 import com.takanakonbu.penguinsort.ui.game.GamePhase
 import com.takanakonbu.penguinsort.ui.game.GameState
+import com.takanakonbu.penguinsort.ui.theme.PrimaryColor
 import kotlinx.coroutines.delay
 
 @Composable
@@ -185,7 +186,10 @@ fun GameScreen() {
                         onClick = { initializeGame() },
                         modifier = Modifier
                             .width(200.dp)
-                            .height(60.dp)
+                            .height(60.dp),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = PrimaryColor
+                        )
                     ) {
                         Text(
                             text = "リトライ",
