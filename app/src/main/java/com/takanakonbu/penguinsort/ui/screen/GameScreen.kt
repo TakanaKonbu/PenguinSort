@@ -29,16 +29,27 @@ fun GameScreen(
 ) {
     val context = LocalContext.current
     var gameState by remember { mutableStateOf(GameState()) }
+    var currentPenguinCount by remember { mutableStateOf(3) }
+
+    // 問題数に応じてペンギンの数を決定する関数
+    fun getPenguinCount(solvedProblems: Int): Int {
+        return when {
+            solvedProblems >= 12 -> 10  // 3 + 4 + 5問で12問以上
+            solvedProblems >= 7 -> 7    // 3 + 4問で7問以上
+            solvedProblems >= 3 -> 5    // 3問以上
+            else -> 3                    // 開始時
+        }
+    }
 
     // ゲーム開始時の初期化
     fun initializeGame() {
-        val randomPenguins = PenguinType.entries.shuffled().take(3)
+        currentPenguinCount = getPenguinCount(gameState.solvedProblems)
+        val randomPenguins = PenguinType.entries.shuffled().take(currentPenguinCount)
         gameState = gameState.copy(
             targetPenguins = randomPenguins,
             shuffledPenguins = randomPenguins.shuffled(),
             selectedPenguins = emptyList(),
-            gamePhase = GamePhase.SHOWING,
-            isGameOver = false
+            gamePhase = GamePhase.SHOWING
         )
     }
 
@@ -71,13 +82,18 @@ fun GameScreen(
 
             // すべて選択完了した場合
             if (newSelectedPenguins.size == gameState.targetPenguins.size) {
-                val randomPenguins = PenguinType.entries.shuffled().take(3)
-                gameState = gameState.copy(
-                    targetPenguins = randomPenguins,
-                    shuffledPenguins = randomPenguins.shuffled(),
-                    selectedPenguins = emptyList(),
-                    gamePhase = GamePhase.SHOWING
-                )
+                // 問題数をインクリメント
+                val newSolvedProblems = gameState.solvedProblems + 1
+                gameState = gameState.copy(solvedProblems = newSolvedProblems)
+
+                // 新しいペンギン数を取得
+                val newPenguinCount = getPenguinCount(newSolvedProblems)
+                if (newPenguinCount != currentPenguinCount) {
+                    currentPenguinCount = newPenguinCount
+                }
+
+                // 新しいラウンドを開始
+                initializeGame()
             }
         } else {
             // 不正解の場合
@@ -95,6 +111,16 @@ fun GameScreen(
             contentDescription = "Background",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.FillBounds
+        )
+
+        // 解いた問題数の表示
+        Text(
+            text = "解いた問題: ${gameState.solvedProblems}問",
+            color = Color.White,
+            fontSize = 20.sp,
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.TopStart)
         )
 
         // 上部の目標配置表示
@@ -181,6 +207,13 @@ fun GameScreen(
                         text = "ゲームオーバー",
                         color = Color.White,
                         fontSize = 32.sp,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = "クリアした問題数: ${gameState.solvedProblems}問",
+                        color = Color.White,
+                        fontSize = 24.sp,
                         textAlign = TextAlign.Center
                     )
 
