@@ -34,9 +34,9 @@ fun GameScreen(
     // 問題数に応じてペンギンの数を決定する関数
     fun getPenguinCount(solvedProblems: Int): Int {
         return when {
-            solvedProblems >= 12 -> 10  // 3 + 4 + 5問で12問以上
-            solvedProblems >= 7 -> 7    // 3 + 4問で7問以上
-            solvedProblems >= 3 -> 5    // 3問以上
+            solvedProblems >= 15 -> 10  // 16問目からペンギンが10匹
+            solvedProblems >= 10 -> 7    // 11問目からペンギンが7匹
+            solvedProblems >= 5 -> 5    // 6問目からペンギンが5匹
             else -> 3                    // 開始時
         }
     }
