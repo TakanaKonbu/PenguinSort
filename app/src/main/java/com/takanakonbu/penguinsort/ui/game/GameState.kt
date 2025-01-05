@@ -23,17 +23,6 @@ data class GameState(
         const val MAX_TIME = 5000L // 5秒
         const val TIME_UPDATE_INTERVAL = 16L // 約60FPS
 
-        // レベルごとのペンギンの数
-        const val LEVEL_1_PENGUINS = 3
-        const val LEVEL_2_PENGUINS = 5
-        const val LEVEL_3_PENGUINS = 7
-        const val LEVEL_4_PENGUINS = 10
-
-        // レベルアップに必要な問題数
-        const val LEVEL_2_THRESHOLD = 3
-        const val LEVEL_3_THRESHOLD = 7
-        const val LEVEL_4_THRESHOLD = 12
-
         fun loadHighScores(context: Context): List<Int> {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             return listOf(
@@ -57,25 +46,6 @@ data class GameState(
                 putInt(SCORE_3_KEY, top3Scores.getOrElse(2) { 0 })
                 apply()
             }
-        }
-    }
-
-    fun getPenguinCountForLevel(): Int {
-        return when (currentLevel) {
-            1 -> LEVEL_1_PENGUINS
-            2 -> LEVEL_2_PENGUINS
-            3 -> LEVEL_3_PENGUINS
-            4 -> LEVEL_4_PENGUINS
-            else -> LEVEL_1_PENGUINS
-        }
-    }
-
-    fun calculateLevel(problems: Int): Int {
-        return when {
-            problems >= LEVEL_4_THRESHOLD -> 4
-            problems >= LEVEL_3_THRESHOLD -> 3
-            problems >= LEVEL_2_THRESHOLD -> 2
-            else -> 1
         }
     }
 }

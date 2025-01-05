@@ -29,7 +29,7 @@ fun GameScreen(
 ) {
     val context = LocalContext.current
     var gameState by remember { mutableStateOf(GameState()) }
-    var currentPenguinCount by remember { mutableStateOf(3) }
+    var currentPenguinCount by remember { mutableIntStateOf(3) }
 
     // 問題数に応じてペンギンの数を決定する関数
     fun getPenguinCount(solvedProblems: Int): Int {
