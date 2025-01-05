@@ -1,12 +1,8 @@
 package com.takanakonbu.penguinsort.ui.game
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.takanakonbu.penguinsort.model.PenguinType
 
-/**
- * ゲームの状態を管理するデータクラス
- */
 data class GameState(
     val targetPenguins: List<PenguinType> = emptyList(),
     val shuffledPenguins: List<PenguinType> = emptyList(),
@@ -15,7 +11,8 @@ data class GameState(
     val isGameOver: Boolean = false,
     val solvedProblems: Int = 0,
     val currentLevel: Int = 1,
-    val highScores: List<Int> = emptyList()
+    val highScores: List<Int> = emptyList(),
+    val remainingTime: Float = 1f  // 1f = 100%, 0f = 0%
 ) {
     companion object {
         private const val PREFS_NAME = "PenguinSortPrefs"
@@ -23,20 +20,20 @@ data class GameState(
         private const val SCORE_2_KEY = "highScore2"
         private const val SCORE_3_KEY = "highScore3"
 
+        const val MAX_TIME = 5000L // 5秒
+        const val TIME_UPDATE_INTERVAL = 16L // 約60FPS
+
         // レベルごとのペンギンの数
-        const val LEVEL_1_PENGUINS = 3  // 初期レベル（3匹）
-        const val LEVEL_2_PENGUINS = 5  // 3問クリア後（5匹）
-        const val LEVEL_3_PENGUINS = 7  // 7問クリア後（7匹）
-        const val LEVEL_4_PENGUINS = 10 // 12問クリア後（10匹）
+        const val LEVEL_1_PENGUINS = 3
+        const val LEVEL_2_PENGUINS = 5
+        const val LEVEL_3_PENGUINS = 7
+        const val LEVEL_4_PENGUINS = 10
 
         // レベルアップに必要な問題数
-        const val LEVEL_2_THRESHOLD = 3  // レベル2へのしきい値
-        const val LEVEL_3_THRESHOLD = 7  // レベル3へのしきい値
-        const val LEVEL_4_THRESHOLD = 12 // レベル4へのしきい値
+        const val LEVEL_2_THRESHOLD = 3
+        const val LEVEL_3_THRESHOLD = 7
+        const val LEVEL_4_THRESHOLD = 12
 
-        /**
-         * 保存されているハイスコアを読み込む
-         */
         fun loadHighScores(context: Context): List<Int> {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             return listOf(
@@ -46,9 +43,6 @@ data class GameState(
             ).filter { it > 0 }.sorted().reversed()
         }
 
-        /**
-         * 新しいスコアを保存し、TOP3を更新する
-         */
         fun saveNewScore(context: Context, newScore: Int) {
             val currentScores = loadHighScores(context).toMutableList()
             currentScores.add(newScore)
@@ -66,9 +60,6 @@ data class GameState(
         }
     }
 
-    /**
-     * 現在のレベルに応じたペンギンの数を返す
-     */
     fun getPenguinCountForLevel(): Int {
         return when (currentLevel) {
             1 -> LEVEL_1_PENGUINS
@@ -79,9 +70,6 @@ data class GameState(
         }
     }
 
-    /**
-     * 問題数に応じた適切なレベルを計算する
-     */
     fun calculateLevel(problems: Int): Int {
         return when {
             problems >= LEVEL_4_THRESHOLD -> 4
@@ -92,11 +80,8 @@ data class GameState(
     }
 }
 
-/**
- * ゲームの進行フェーズを表す列挙型
- */
 enum class GamePhase {
-    SHOWING,     // 3秒間表示の確認フェーズ
-    PLAYING,     // プレイ中のフェーズ
-    GAME_OVER    // ゲームオーバーフェーズ
+    SHOWING,
+    PLAYING,
+    GAME_OVER
 }

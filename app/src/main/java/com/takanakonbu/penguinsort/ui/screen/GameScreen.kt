@@ -49,7 +49,8 @@ fun GameScreen(
             targetPenguins = randomPenguins,
             shuffledPenguins = randomPenguins.shuffled(),
             selectedPenguins = emptyList(),
-            gamePhase = GamePhase.SHOWING
+            gamePhase = GamePhase.SHOWING,
+            remainingTime = 1f
         )
     }
 
@@ -60,11 +61,30 @@ fun GameScreen(
         gameState = gameState.copy(gamePhase = GamePhase.PLAYING)
     }
 
-    // 3秒表示後にプレイフェーズへ移行
+    // 時間制限の管理
     LaunchedEffect(gameState.gamePhase) {
-        if (gameState.gamePhase == GamePhase.SHOWING && !gameState.isGameOver) {
+        if (gameState.gamePhase == GamePhase.PLAYING && !gameState.isGameOver) {
+            var remainingTime = GameState.MAX_TIME
+            while (remainingTime > 0) {
+                delay(GameState.TIME_UPDATE_INTERVAL)
+                remainingTime -= GameState.TIME_UPDATE_INTERVAL
+                gameState = gameState.copy(
+                    remainingTime = remainingTime.toFloat() / GameState.MAX_TIME
+                )
+            }
+            // 時間切れ
+            GameState.saveNewScore(context, gameState.solvedProblems)
+            gameState = gameState.copy(
+                gamePhase = GamePhase.GAME_OVER,
+                isGameOver = true,
+                highScores = GameState.loadHighScores(context)
+            )
+        } else if (gameState.gamePhase == GamePhase.SHOWING && !gameState.isGameOver) {
             delay(3000)
-            gameState = gameState.copy(gamePhase = GamePhase.PLAYING)
+            gameState = gameState.copy(
+                gamePhase = GamePhase.PLAYING,
+                remainingTime = 1f
+            )
         }
     }
 
@@ -148,6 +168,23 @@ fun GameScreen(
 
         // プレイ画面
         if (gameState.gamePhase == GamePhase.PLAYING) {
+            // タイムバー
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 16.dp)
+                    .height(8.dp)
+                    .background(Color.Gray.copy(alpha = 0.3f))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(gameState.remainingTime)
+                        .background(PrimaryColor)
+                )
+            }
+
             // 選択済みペンギン（氷の上）
             Row(
                 modifier = Modifier
@@ -203,7 +240,7 @@ fun GameScreen(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(32.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
                         text = "ゲームオーバー",
@@ -224,12 +261,12 @@ fun GameScreen(
                     // ハイスコア表示
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "ハイスコア",
                             color = Color.White,
-                            fontSize = 16.sp,
+                            fontSize = 20.sp,
                             textAlign = TextAlign.Center
                         )
 
@@ -237,7 +274,7 @@ fun GameScreen(
                             Text(
                                 text = "${index + 1}位：${score}問",
                                 color = if (gameState.solvedProblems == score) Color.Yellow else Color.White,
-                                fontSize = 18.sp,
+                                fontSize = 16.sp,
                                 textAlign = TextAlign.Center
                             )
                         }
