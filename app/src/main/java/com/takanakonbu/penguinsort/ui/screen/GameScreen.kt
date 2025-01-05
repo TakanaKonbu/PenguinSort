@@ -97,9 +97,11 @@ fun GameScreen(
             }
         } else {
             // 不正解の場合
+            GameState.saveNewScore(context, gameState.solvedProblems)
             gameState = gameState.copy(
                 gamePhase = GamePhase.GAME_OVER,
-                isGameOver = true
+                isGameOver = true,
+                highScores = GameState.loadHighScores(context)
             )
         }
     }
@@ -211,17 +213,53 @@ fun GameScreen(
                     )
 
                     Text(
-                        text = "クリアした問題数: ${gameState.solvedProblems}問",
+                        text = "今回のスコア：${gameState.solvedProblems}問",
                         color = Color.White,
                         fontSize = 24.sp,
                         textAlign = TextAlign.Center
                     )
 
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // ハイスコア表示
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "ハイスコア",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+
+                        gameState.highScores.forEachIndexed { index, score ->
+                            Text(
+                                text = "${index + 1}位：${score}問",
+                                color = if (gameState.solvedProblems == score) Color.Yellow else Color.White,
+                                fontSize = 18.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        // Top3に満たない場合、残りのスロットを表示
+                        repeat(3 - gameState.highScores.size) { index ->
+                            Text(
+                                text = "${gameState.highScores.size + index + 1}位：--",
+                                color = Color.Gray,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Button(
                         onClick = { onRetry() },
                         modifier = Modifier
                             .width(200.dp)
-                            .height(60.dp),
+                            .height(50.dp),
                         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                             containerColor = PrimaryColor
                         )
