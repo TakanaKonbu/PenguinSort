@@ -35,7 +35,7 @@ fun GameScreen(
     fun getPenguinCount(solvedProblems: Int): Int {
         return when {
             solvedProblems >= 15 -> 10  // 16問目からペンギンが10匹
-            solvedProblems >= 10 -> 7    // 11問目からペンギンが7匹
+            solvedProblems >= 10 -> 7   // 11問目からペンギンが7匹
             solvedProblems >= 5 -> 5    // 6問目からペンギンが5匹
             else -> 3                    // 開始時
         }
@@ -145,6 +145,25 @@ fun GameScreen(
                 .align(Alignment.TopStart)
         )
 
+        // タイムバー
+        if (gameState.gamePhase == GamePhase.PLAYING) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 16.dp)
+                    .height(8.dp)
+                    .background(Color.Gray.copy(alpha = 0.3f))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(gameState.remainingTime)
+                        .background(PrimaryColor)
+                )
+            }
+        }
+
         // 上部の目標配置表示
         if (gameState.gamePhase == GamePhase.SHOWING) {
             Row(
@@ -166,63 +185,57 @@ fun GameScreen(
             }
         }
 
-        // プレイ画面
         if (gameState.gamePhase == GamePhase.PLAYING) {
-            // タイムバー
             Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 16.dp)
-                    .height(8.dp)
-                    .background(Color.Gray.copy(alpha = 0.3f))
+                modifier = Modifier.fillMaxSize()
             ) {
+                // 選択可能なペンギン（中央）
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    gameState.shuffledPenguins.forEach { penguin ->
+                        val isSelected = penguin in gameState.selectedPenguins
+                        Box(
+                            modifier = Modifier.size(80.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (!isSelected) {
+                                Image(
+                                    painter = painterResource(id = penguin.getResourceId(context)),
+                                    contentDescription = "Penguin ${penguin.name}",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable { onPenguinClick(penguin) }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 選択済みペンギン（氷の上）
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(gameState.remainingTime)
-                        .background(PrimaryColor)
-                )
-            }
-
-            // 選択済みペンギン（氷の上）
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-            ) {
-                gameState.selectedPenguins.forEach { penguin ->
-                    Image(
-                        painter = painterResource(id = penguin.getResourceId(context)),
-                        contentDescription = "Selected ${penguin.name}",
-                        modifier = Modifier.size(80.dp)
-                    )
-                }
-            }
-
-            // 選択可能なペンギン（中央）
-            Row(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                gameState.shuffledPenguins.forEach { penguin ->
-                    val isSelected = penguin in gameState.selectedPenguins
-                    Box(
-                        modifier = Modifier.size(80.dp),
-                        contentAlignment = Alignment.Center
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(160.dp)  // 高さを増やして氷上のスペースを確保
+                        .background(Color.Transparent)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 32.dp),  // 下部のパディングを増やして氷上に配置
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                        verticalAlignment = Alignment.Bottom
                     ) {
-                        if (!isSelected) {
+                        gameState.selectedPenguins.forEach { penguin ->
                             Image(
                                 painter = painterResource(id = penguin.getResourceId(context)),
-                                contentDescription = "Penguin ${penguin.name}",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clickable { onPenguinClick(penguin) }
+                                contentDescription = "Selected ${penguin.name}",
+                                modifier = Modifier.size(80.dp)
                             )
                         }
                     }
