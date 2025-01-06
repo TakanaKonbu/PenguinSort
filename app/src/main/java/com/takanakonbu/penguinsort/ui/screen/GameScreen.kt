@@ -23,11 +23,13 @@ import com.takanakonbu.penguinsort.ui.game.GamePhase
 import com.takanakonbu.penguinsort.ui.game.GameState
 import com.takanakonbu.penguinsort.ui.theme.PrimaryColor
 import com.takanakonbu.penguinsort.sound.SoundManager
+import com.takanakonbu.penguinsort.ui.components.AdManager
 import kotlinx.coroutines.delay
 
 @Composable
 fun GameScreen(
     soundManager: SoundManager,
+    adManager: AdManager,
     onRetry: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -346,19 +348,31 @@ fun GameScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        // コンティニューボタン（利用可能な場合のみ表示）
+                        // コンティニューボタン
                         if (gameState.canContinue()) {
+                            var rewardEarned by remember { mutableStateOf(false) }
+
                             Button(
                                 onClick = {
-                                    // コンティニュー処理
-                                    gameState = gameState.copy(
-                                        gamePhase = GamePhase.SHOWING,
-                                        isGameOver = false,
-                                        continuedCount = gameState.continuedCount + 1,
-                                        remainingTime = 1f
+                                    adManager.loadContinueAd(
+                                        onAdDismissed = {
+                                            // 広告が閉じられた後に、報酬を獲得していた場合のみゲームを再開
+                                            if (rewardEarned) {
+                                                gameState = gameState.copy(
+                                                    gamePhase = GamePhase.SHOWING,
+                                                    isGameOver = false,
+                                                    continuedCount = gameState.continuedCount + 1,
+                                                    remainingTime = 1f
+                                                )
+                                                initializeGame()
+                                                rewardEarned = false // リセット
+                                            }
+                                        },
+                                        onRewardEarned = {
+                                            // 報酬獲得フラグを立てるだけ
+                                            rewardEarned = true
+                                        }
                                     )
-                                    // 新しい問題を初期化
-                                    initializeGame()
                                 },
                                 modifier = Modifier
                                     .width(200.dp)
@@ -377,7 +391,11 @@ fun GameScreen(
 
                         // リトライボタン
                         Button(
-                            onClick = { onRetry() },
+                            onClick = {
+                                adManager.loadRetryAd {
+                                    onRetry()
+                                }
+                            },
                             modifier = Modifier
                                 .width(200.dp)
                                 .height(50.dp),

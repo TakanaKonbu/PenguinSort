@@ -1,17 +1,13 @@
 package com.takanakonbu.penguinsort.ui.screen
 
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import com.takanakonbu.penguinsort.sound.SoundManager
+import com.takanakonbu.penguinsort.ui.components.AdManager
 
 @Composable
-fun MainScreen() {
+fun MainScreen(adManager: AdManager, soundManager: SoundManager) {
     var gameStarted by remember { mutableStateOf(false) }
     var retryFromGameOver by remember { mutableStateOf(false) }
-
-    // SoundManagerをMainScreenスコープで管理
-    val context = LocalContext.current
-    val soundManager = remember { SoundManager(context) }
 
     // クリーンアップ処理
     DisposableEffect(Unit) {
@@ -23,7 +19,8 @@ fun MainScreen() {
 
     if (gameStarted && !retryFromGameOver) {
         GameScreen(
-            soundManager = soundManager, // SoundManagerを渡す
+            soundManager = soundManager,
+            adManager = adManager,
             onRetry = {
                 gameStarted = false
                 retryFromGameOver = true

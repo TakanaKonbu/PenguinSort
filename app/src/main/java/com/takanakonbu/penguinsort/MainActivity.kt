@@ -10,10 +10,21 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.takanakonbu.penguinsort.ui.theme.PenguinSortTheme
 import com.takanakonbu.penguinsort.ui.screen.MainScreen
+import com.takanakonbu.penguinsort.ui.components.AdManager
+import com.google.android.gms.ads.MobileAds
+import com.takanakonbu.penguinsort.sound.SoundManager
 
 class MainActivity : ComponentActivity() {
+    private lateinit var adManager: AdManager
+    private lateinit var soundManager: SoundManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize managers
+        MobileAds.initialize(this)
+        soundManager = SoundManager(this)
+        adManager = AdManager(this, soundManager)
 
         // エッジトゥエッジモードを有効化
         enableEdgeToEdge()
@@ -32,7 +43,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             PenguinSortTheme {
-                MainScreen()
+                MainScreen(adManager = adManager, soundManager = soundManager)
             }
         }
     }
