@@ -243,7 +243,7 @@ fun GameScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter)
-                            .padding(bottom = 80.dp),
+                            .padding(bottom = 40.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                     ) {
                         gameState.selectedPenguins.forEach { penguin ->
