@@ -31,17 +31,16 @@ fun GameScreen(
     var gameState by remember { mutableStateOf(GameState()) }
     var currentPenguinCount by remember { mutableIntStateOf(3) }
 
-    // 問題数に応じてペンギンの数を決定する関数
+    // ゲームロジック関数（変更なし）
     fun getPenguinCount(solvedProblems: Int): Int {
         return when {
-            solvedProblems >= 15 -> 10  // 16問目からペンギンが10匹
-            solvedProblems >= 10 -> 7   // 11問目からペンギンが7匹
-            solvedProblems >= 5 -> 5    // 6問目からペンギンが5匹
-            else -> 3                    // 開始時
+            solvedProblems >= 15 -> 10
+            solvedProblems >= 10 -> 7
+            solvedProblems >= 5 -> 5
+            else -> 3
         }
     }
 
-    // ゲーム開始時の初期化
     fun initializeGame() {
         currentPenguinCount = getPenguinCount(gameState.solvedProblems)
         val randomPenguins = PenguinType.entries.shuffled().take(currentPenguinCount)
@@ -54,14 +53,44 @@ fun GameScreen(
         )
     }
 
-    // 初回のゲーム開始
+    fun onPenguinClick(penguin: PenguinType) {
+        if (gameState.gamePhase != GamePhase.PLAYING) return
+
+        val currentIndex = gameState.selectedPenguins.size
+        val targetPenguin = gameState.targetPenguins.getOrNull(currentIndex)
+
+        if (penguin == targetPenguin) {
+            val newSelectedPenguins = gameState.selectedPenguins + penguin
+            gameState = gameState.copy(selectedPenguins = newSelectedPenguins)
+
+            if (newSelectedPenguins.size == gameState.targetPenguins.size) {
+                val newSolvedProblems = gameState.solvedProblems + 1
+                gameState = gameState.copy(solvedProblems = newSolvedProblems)
+
+                val newPenguinCount = getPenguinCount(newSolvedProblems)
+                if (newPenguinCount != currentPenguinCount) {
+                    currentPenguinCount = newPenguinCount
+                }
+
+                initializeGame()
+            }
+        } else {
+            GameState.saveNewScore(context, gameState.solvedProblems)
+            gameState = gameState.copy(
+                gamePhase = GamePhase.GAME_OVER,
+                isGameOver = true,
+                highScores = GameState.loadHighScores(context)
+            )
+        }
+    }
+
+    // LaunchedEffectブロック（変更なし）
     LaunchedEffect(Unit) {
         initializeGame()
         delay(3000)
         gameState = gameState.copy(gamePhase = GamePhase.PLAYING)
     }
 
-    // 時間制限の管理
     LaunchedEffect(gameState.gamePhase) {
         if (gameState.gamePhase == GamePhase.PLAYING && !gameState.isGameOver) {
             var remainingTime = GameState.MAX_TIME
@@ -72,7 +101,6 @@ fun GameScreen(
                     remainingTime = remainingTime.toFloat() / GameState.MAX_TIME
                 )
             }
-            // 時間切れ
             GameState.saveNewScore(context, gameState.solvedProblems)
             gameState = gameState.copy(
                 gamePhase = GamePhase.GAME_OVER,
@@ -88,153 +116,136 @@ fun GameScreen(
         }
     }
 
-    // ペンギンをタップしたときの処理
-    fun onPenguinClick(penguin: PenguinType) {
-        if (gameState.gamePhase != GamePhase.PLAYING) return
-
-        val currentIndex = gameState.selectedPenguins.size
-        val targetPenguin = gameState.targetPenguins.getOrNull(currentIndex)
-
-        if (penguin == targetPenguin) {
-            // 正解の場合
-            val newSelectedPenguins = gameState.selectedPenguins + penguin
-            gameState = gameState.copy(selectedPenguins = newSelectedPenguins)
-
-            // すべて選択完了した場合
-            if (newSelectedPenguins.size == gameState.targetPenguins.size) {
-                // 問題数をインクリメント
-                val newSolvedProblems = gameState.solvedProblems + 1
-                gameState = gameState.copy(solvedProblems = newSolvedProblems)
-
-                // 新しいペンギン数を取得
-                val newPenguinCount = getPenguinCount(newSolvedProblems)
-                if (newPenguinCount != currentPenguinCount) {
-                    currentPenguinCount = newPenguinCount
-                }
-
-                // 新しいラウンドを開始
-                initializeGame()
-            }
-        } else {
-            // 不正解の場合
-            GameState.saveNewScore(context, gameState.solvedProblems)
-            gameState = gameState.copy(
-                gamePhase = GamePhase.GAME_OVER,
-                isGameOver = true,
-                highScores = GameState.loadHighScores(context)
-            )
-        }
-    }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        // 背景画像
-        Image(
-            painter = painterResource(id = R.drawable.bg),
-            contentDescription = "Background",
+    // メインのUI構造
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        Column(
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillBounds
-        )
-
-        // 解いた問題数の表示
-        Text(
-            text = "解いた問題: ${gameState.solvedProblems}問",
-            color = Color.White,
-            fontSize = 20.sp,
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.TopStart)
-        )
-
-        // タイムバー
-        if (gameState.gamePhase == GamePhase.PLAYING) {
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // 上部エリア
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 16.dp)
-                    .height(8.dp)
-                    .background(Color.Gray.copy(alpha = 0.3f))
+                    .weight(0.3f)
             ) {
+                // スコア表示
+                Text(
+                    text = "解いた問題: ${gameState.solvedProblems}問",
+                    color = Color.Black,
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.TopStart)
+                )
+
+                if (gameState.gamePhase == GamePhase.PLAYING) {
+                    // タイムバー
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp, vertical = 16.dp)
+                            .height(8.dp)
+                            .background(Color.Gray.copy(alpha = 0.3f))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(gameState.remainingTime)
+                                .background(PrimaryColor)
+                        )
+                    }
+                } else if (gameState.gamePhase == GamePhase.SHOWING) {
+                    // 目標配置表示
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                            .background(Color.Black.copy(alpha = 0.5f))
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        gameState.targetPenguins.forEach { penguin ->
+                            Image(
+                                painter = painterResource(id = penguin.getResourceId(context)),
+                                contentDescription = "Target Penguin ${penguin.name}",
+                                modifier = Modifier.size(80.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 中央エリア（選択肢ペンギン）
+            if (gameState.gamePhase == GamePhase.PLAYING) {
                 Box(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(gameState.remainingTime)
-                        .background(PrimaryColor)
-                )
-            }
-        }
-
-        // 上部の目標配置表示
-        if (gameState.gamePhase == GamePhase.SHOWING) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                gameState.targetPenguins.forEach { penguin ->
-                    Image(
-                        painter = painterResource(id = penguin.getResourceId(context)),
-                        contentDescription = "Penguin ${penguin.name}",
-                        modifier = Modifier.size(80.dp)
-                    )
-                }
-            }
-        }
-
-        if (gameState.gamePhase == GamePhase.PLAYING) {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // 選択可能なペンギン（中央）
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.Center)
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                        .weight(0.4f)
                 ) {
-                    gameState.shuffledPenguins.forEach { penguin ->
-                        val isSelected = penguin in gameState.selectedPenguins
-                        Box(
-                            modifier = Modifier.size(80.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (!isSelected) {
-                                Image(
-                                    painter = painterResource(id = penguin.getResourceId(context)),
-                                    contentDescription = "Penguin ${penguin.name}",
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clickable { onPenguinClick(penguin) }
-                                )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        gameState.shuffledPenguins.forEach { penguin ->
+                            val isSelected = penguin in gameState.selectedPenguins
+                            Box(
+                                modifier = Modifier.size(80.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (!isSelected) {
+                                    Image(
+                                        painter = painterResource(id = penguin.getResourceId(context)),
+                                        contentDescription = "Choice Penguin ${penguin.name}",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clickable { onPenguinClick(penguin) }
+                                    )
+                                }
                             }
                         }
                     }
                 }
+            }
 
-                // 選択済みペンギン（氷の上）
-                Box(
+            // 下部エリア（氷山とペンギン）
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.3f)
+            ) {
+                // 氷山の画像
+                Image(
+                    painter = painterResource(id = R.drawable.bgclear),
+                    contentDescription = "Ice Platform",
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .height(160.dp)  // 高さを増やして氷上のスペースを確保
-                        .background(Color.Transparent)
-                ) {
+                        .height(160.dp)
+                        .align(Alignment.BottomCenter),
+                    contentScale = ContentScale.FillWidth
+                )
+
+                // 選択済みペンギン
+                if (gameState.gamePhase == GamePhase.PLAYING) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 32.dp),  // 下部のパディングを増やして氷上に配置
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                        verticalAlignment = Alignment.Bottom
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 80.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                     ) {
                         gameState.selectedPenguins.forEach { penguin ->
                             Image(
                                 painter = painterResource(id = penguin.getResourceId(context)),
-                                contentDescription = "Selected ${penguin.name}",
+                                contentDescription = "Selected Penguin ${penguin.name}",
                                 modifier = Modifier.size(80.dp)
                             )
                         }
@@ -243,7 +254,7 @@ fun GameScreen(
             }
         }
 
-        // ゲームオーバー表示
+        // ゲームオーバー表示（オーバーレイ）
         if (gameState.gamePhase == GamePhase.GAME_OVER) {
             Box(
                 modifier = Modifier
@@ -292,7 +303,6 @@ fun GameScreen(
                             )
                         }
 
-                        // Top3に満たない場合、残りのスロットを表示
                         repeat(3 - gameState.highScores.size) { index ->
                             Text(
                                 text = "${gameState.highScores.size + index + 1}位：--",
