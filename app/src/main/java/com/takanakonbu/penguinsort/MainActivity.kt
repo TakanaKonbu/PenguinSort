@@ -18,6 +18,24 @@ class MainActivity : ComponentActivity() {
     private lateinit var adManager: AdManager
     private lateinit var soundManager: SoundManager
 
+    override fun onStart() {
+        super.onStart()
+        // アプリが表示されたときにBGMを開始
+        soundManager.startBgm()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // アプリがバックグラウンドに移動したときにBGMを停止
+        soundManager.stopBgm()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // アプリが終了するときにサウンドリソースを解放
+        soundManager.release()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

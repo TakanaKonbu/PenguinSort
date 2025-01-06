@@ -9,14 +9,6 @@ fun MainScreen(adManager: AdManager, soundManager: SoundManager) {
     var gameStarted by remember { mutableStateOf(false) }
     var retryFromGameOver by remember { mutableStateOf(false) }
 
-    // クリーンアップ処理
-    DisposableEffect(Unit) {
-        soundManager.startBgm() // アプリ起動時にBGMを開始
-        onDispose {
-            soundManager.release()
-        }
-    }
-
     if (gameStarted && !retryFromGameOver) {
         GameScreen(
             soundManager = soundManager,
