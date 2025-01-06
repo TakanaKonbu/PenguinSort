@@ -31,7 +31,7 @@ fun GameScreen(
     var gameState by remember { mutableStateOf(GameState()) }
     var currentPenguinCount by remember { mutableIntStateOf(3) }
 
-    // ゲームロジック関数（変更なし）
+    // ゲームロジック関数
     fun getPenguinCount(solvedProblems: Int): Int {
         return when {
             solvedProblems >= 15 -> 10
@@ -84,7 +84,7 @@ fun GameScreen(
         }
     }
 
-    // LaunchedEffectブロック（変更なし）
+    // LaunchedEffectブロック
     LaunchedEffect(Unit) {
         initializeGame()
         delay(3000)
@@ -132,34 +132,38 @@ fun GameScreen(
                     .fillMaxWidth()
                     .weight(0.3f)
             ) {
-                // スコア表示
-                Text(
-                    text = "解いた問題: ${gameState.solvedProblems}問",
-                    color = Color.Black,
-                    fontSize = 20.sp,
+                Column(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(16.dp)
-                        .align(Alignment.TopStart)
-                )
+                ) {
+                    // スコア表示
+                    Text(
+                        text = "解いた問題: ${gameState.solvedProblems}問",
+                        color = Color.Black,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
 
-                if (gameState.gamePhase == GamePhase.PLAYING) {
-                    // タイムバー
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .fillMaxWidth()
-                            .padding(horizontal = 32.dp, vertical = 16.dp)
-                            .height(8.dp)
-                            .background(Color.Gray.copy(alpha = 0.3f))
-                    ) {
+                    if (gameState.gamePhase == GamePhase.PLAYING) {
+                        // タイムバー
                         Box(
                             modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth(gameState.remainingTime)
-                                .background(PrimaryColor)
-                        )
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .background(Color.Gray.copy(alpha = 0.3f))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .fillMaxWidth(gameState.remainingTime)
+                                    .background(PrimaryColor)
+                            )
+                        }
                     }
-                } else if (gameState.gamePhase == GamePhase.SHOWING) {
+                }
+
+                if (gameState.gamePhase == GamePhase.SHOWING) {
                     // 目標配置表示
                     Row(
                         modifier = Modifier
