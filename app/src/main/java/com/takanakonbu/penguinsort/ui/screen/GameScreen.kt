@@ -21,10 +21,12 @@ import com.takanakonbu.penguinsort.model.PenguinType
 import com.takanakonbu.penguinsort.ui.game.GamePhase
 import com.takanakonbu.penguinsort.ui.game.GameState
 import com.takanakonbu.penguinsort.ui.theme.PrimaryColor
+import com.takanakonbu.penguinsort.sound.SoundManager
 import kotlinx.coroutines.delay
 
 @Composable
 fun GameScreen(
+    soundManager: SoundManager,
     onRetry: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -60,10 +62,12 @@ fun GameScreen(
         val targetPenguin = gameState.targetPenguins.getOrNull(currentIndex)
 
         if (penguin == targetPenguin) {
+            soundManager.playPutSound()  // 配置音を再生
             val newSelectedPenguins = gameState.selectedPenguins + penguin
             gameState = gameState.copy(selectedPenguins = newSelectedPenguins)
 
             if (newSelectedPenguins.size == gameState.targetPenguins.size) {
+                soundManager.playCorrectSound()  // 正解音を再生
                 val newSolvedProblems = gameState.solvedProblems + 1
                 gameState = gameState.copy(solvedProblems = newSolvedProblems)
 
@@ -75,6 +79,7 @@ fun GameScreen(
                 initializeGame()
             }
         } else {
+            soundManager.playGameOverSound()  // ゲームオーバー音を再生
             GameState.saveNewScore(context, gameState.solvedProblems)
             gameState = gameState.copy(
                 gamePhase = GamePhase.GAME_OVER,
@@ -101,6 +106,7 @@ fun GameScreen(
                     remainingTime = remainingTime.toFloat() / GameState.MAX_TIME
                 )
             }
+            soundManager.playGameOverSound()  // タイムアップ時にゲームオーバー音を再生
             GameState.saveNewScore(context, gameState.solvedProblems)
             gameState = gameState.copy(
                 gamePhase = GamePhase.GAME_OVER,
