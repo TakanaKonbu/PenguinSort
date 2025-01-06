@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +33,20 @@ fun GameScreen(
     val context = LocalContext.current
     var gameState by remember { mutableStateOf(GameState()) }
     var currentPenguinCount by remember { mutableIntStateOf(3) }
+
+    // ゲーム終了時の処理を関数として定義
+    fun handleGameOver() {
+        soundManager.playGameOverSound()
+        // コンティニュー不可の場合のみハイスコアを保存
+        if (!gameState.canContinue()) {
+            GameState.saveNewScore(context, gameState.solvedProblems)
+        }
+        gameState = gameState.copy(
+            gamePhase = GamePhase.GAME_OVER,
+            isGameOver = true,
+            highScores = GameState.loadHighScores(context)
+        )
+    }
 
     // ゲームロジック関数
     fun getPenguinCount(solvedProblems: Int): Int {
@@ -79,17 +94,11 @@ fun GameScreen(
                 initializeGame()
             }
         } else {
-            soundManager.playGameOverSound()  // ゲームオーバー音を再生
-            GameState.saveNewScore(context, gameState.solvedProblems)
-            gameState = gameState.copy(
-                gamePhase = GamePhase.GAME_OVER,
-                isGameOver = true,
-                highScores = GameState.loadHighScores(context)
-            )
+            handleGameOver()
         }
     }
 
-    // LaunchedEffectブロック
+    // LaunchedEffect blocks
     LaunchedEffect(Unit) {
         initializeGame()
         delay(3000)
@@ -106,13 +115,7 @@ fun GameScreen(
                     remainingTime = remainingTime.toFloat() / GameState.MAX_TIME
                 )
             }
-            soundManager.playGameOverSound()  // タイムアップ時にゲームオーバー音を再生
-            GameState.saveNewScore(context, gameState.solvedProblems)
-            gameState = gameState.copy(
-                gamePhase = GamePhase.GAME_OVER,
-                isGameOver = true,
-                highScores = GameState.loadHighScores(context)
-            )
+            handleGameOver()
         } else if (gameState.gamePhase == GamePhase.SHOWING && !gameState.isGameOver) {
             delay(3000)
             gameState = gameState.copy(
@@ -250,7 +253,10 @@ fun GameScreen(
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter)
                             .padding(bottom = 40.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+                        horizontalArrangement = Arrangement.spacedBy(
+                            8.dp,
+                            Alignment.CenterHorizontally
+                        )
                     ) {
                         gameState.selectedPenguins.forEach { penguin ->
                             Image(
@@ -290,6 +296,16 @@ fun GameScreen(
                         textAlign = TextAlign.Center
                     )
 
+                    // コンティニュー関連の情報を表示
+                    if (gameState.canContinue()) {
+                        Text(
+                            text = "残りコンティニュー：${gameState.getRemainingContinues()}回",
+                            color = Color.Yellow,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // ハイスコア表示
@@ -325,19 +341,55 @@ fun GameScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Button(
-                        onClick = { onRetry() },
-                        modifier = Modifier
-                            .width(200.dp)
-                            .height(50.dp),
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                            containerColor = PrimaryColor
-                        )
+                    // ボタンを横並びに配置
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        Text(
-                            text = "リトライ",
-                            fontSize = 20.sp
-                        )
+                        // コンティニューボタン（利用可能な場合のみ表示）
+                        if (gameState.canContinue()) {
+                            Button(
+                                onClick = {
+                                    // コンティニュー処理
+                                    gameState = gameState.copy(
+                                        gamePhase = GamePhase.SHOWING,
+                                        isGameOver = false,
+                                        continuedCount = gameState.continuedCount + 1,
+                                        remainingTime = 1f
+                                    )
+                                    // 新しい問題を初期化
+                                    initializeGame()
+                                },
+                                modifier = Modifier
+                                    .width(200.dp)
+                                    .height(50.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFFFD700) // ゴールド色
+                                )
+                            ) {
+                                Text(
+                                    text = "コンティニュー",
+                                    fontSize = 20.sp,
+                                    color = Color.Black
+                                )
+                            }
+                        }
+
+                        // リトライボタン
+                        Button(
+                            onClick = { onRetry() },
+                            modifier = Modifier
+                                .width(200.dp)
+                                .height(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PrimaryColor
+                            )
+                        ) {
+                            Text(
+                                text = "リトライ",
+                                fontSize = 20.sp
+                            )
+                        }
                     }
                 }
             }

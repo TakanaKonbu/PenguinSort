@@ -12,13 +12,16 @@ data class GameState(
     val solvedProblems: Int = 0,
     val currentLevel: Int = 1,
     val highScores: List<Int> = emptyList(),
-    val remainingTime: Float = 1f  // 1f = 100%, 0f = 0%
+    val remainingTime: Float = 1f,  // 1f = 100%, 0f = 0%
+    val continuedCount: Int = 0,    // コンティニュー回数
+    val isContinueAvailable: Boolean = true  // コンティニュー可能かどうかのフラグ
 ) {
     companion object {
         private const val PREFS_NAME = "PenguinSortPrefs"
         private const val SCORE_1_KEY = "highScore1"
         private const val SCORE_2_KEY = "highScore2"
         private const val SCORE_3_KEY = "highScore3"
+        private const val MAX_CONTINUE_COUNT = 1  // 最大コンティニュー回数を1回に変更
 
         const val MAX_TIME = 5000L // 5秒
         const val TIME_UPDATE_INTERVAL = 16L // 約60FPS
@@ -47,6 +50,16 @@ data class GameState(
                 apply()
             }
         }
+    }
+
+    // コンティニューが可能かどうかを判定するメソッド
+    fun canContinue(): Boolean {
+        return isContinueAvailable && continuedCount < MAX_CONTINUE_COUNT
+    }
+
+    // 残りのコンティニュー回数を取得するメソッド
+    fun getRemainingContinues(): Int {
+        return MAX_CONTINUE_COUNT - continuedCount
     }
 }
 
