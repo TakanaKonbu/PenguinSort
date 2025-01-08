@@ -53,9 +53,13 @@ fun GameScreen(
     // ゲームロジック関数
     fun getPenguinCount(solvedProblems: Int): Int {
         return when {
-            solvedProblems >= 15 -> 10
-            solvedProblems >= 10 -> 7
-            solvedProblems >= 5 -> 5
+            solvedProblems >= 21 -> 10
+            solvedProblems >= 18 -> 9
+            solvedProblems >= 15 -> 8
+            solvedProblems >= 12 -> 7
+            solvedProblems >= 9 -> 6
+            solvedProblems >= 6 -> 5
+            solvedProblems >= 3 -> 4
             else -> 3
         }
     }
