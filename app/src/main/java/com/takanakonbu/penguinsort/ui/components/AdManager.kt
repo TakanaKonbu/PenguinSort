@@ -80,7 +80,9 @@ class AdManager(
             val adRequest = AdRequest.Builder().build()
             RewardedAd.load(
                 activity,
+//                本番ID
 //                "ca-app-pub-2836653067032260/7922387934",
+//                テストID
                 "ca-app-pub-3940256099942544/5224354917",
                 adRequest,
                 object : RewardedAdLoadCallback() {
@@ -113,7 +115,9 @@ class AdManager(
             val adRequest = AdRequest.Builder().build()
             InterstitialAd.load(
                 activity,
+//                本番ID
 //                "ca-app-pub-2836653067032260/2470750706",
+//                テストAD
                 "ca-app-pub-3940256099942544/1033173712",
                 adRequest,
                 object : InterstitialAdLoadCallback() {
