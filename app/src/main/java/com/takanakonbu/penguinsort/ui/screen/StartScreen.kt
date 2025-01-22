@@ -183,35 +183,39 @@ fun StartScreen(onStartClick: () -> Unit) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Button(
-                            onClick = onStartClick,
-                            modifier = Modifier
-                                .width(200.dp)
-                                .height(60.dp),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = PrimaryColor
-                            )
-                        ) {
-                            Text(
-                                text = "スタート",
-                                fontSize = 20.sp
-                            )
+                        Row(
+                        ){
+                            Button(
+                                onClick = onStartClick,
+                                modifier = Modifier
+                                    .width(200.dp)
+                                    .height(60.dp),
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                    containerColor = PrimaryColor
+                                )
+                            ) {
+                                Text(
+                                    text = "スタート",
+                                    fontSize = 20.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(
+                                onClick = { showHowToPlay.value = true },
+                                modifier = Modifier
+                                    .width(200.dp)
+                                    .height(60.dp),
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                    containerColor = PrimaryColor
+                                )
+                            ) {
+                                Text(
+                                    text = "遊び方",
+                                    fontSize = 20.sp
+                                )
+                            }
                         }
 
-                        Button(
-                            onClick = { showHowToPlay.value = true },
-                            modifier = Modifier
-                                .width(200.dp)
-                                .height(60.dp),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                containerColor = PrimaryColor
-                            )
-                        ) {
-                            Text(
-                                text = "遊び方",
-                                fontSize = 20.sp
-                            )
-                        }
 
                         Button(
                             onClick = { showScores.value = true },

@@ -312,8 +312,6 @@ fun GameScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
                     // ハイスコア表示
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -345,7 +343,6 @@ fun GameScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
 
                     // ボタンを横並びに配置
                     Row(
@@ -380,14 +377,14 @@ fun GameScreen(
                                 },
                                 modifier = Modifier
                                     .width(200.dp)
-                                    .height(50.dp),
+                                    .height(40.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(0xFFFFD700) // ゴールド色
                                 )
                             ) {
                                 Text(
                                     text = "コンティニュー",
-                                    fontSize = 20.sp,
+                                    fontSize = 16.sp,
                                     color = Color.Black
                                 )
                             }
@@ -402,14 +399,14 @@ fun GameScreen(
                             },
                             modifier = Modifier
                                 .width(200.dp)
-                                .height(50.dp),
+                                .height(40.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = PrimaryColor
                             )
                         ) {
                             Text(
                                 text = "リトライ",
-                                fontSize = 20.sp
+                                fontSize = 16.sp
                             )
                         }
                     }
