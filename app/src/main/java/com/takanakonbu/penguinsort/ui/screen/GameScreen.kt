@@ -1,5 +1,6 @@
 package com.takanakonbu.penguinsort.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,15 +39,21 @@ fun GameScreen(
 
     // ゲーム終了時の処理を関数として定義
     fun handleGameOver() {
+        Log.d("GameScreen", "Game Over - Score: ${gameState.solvedProblems}")
         soundManager.playGameOverSound()
-        // コンティニュー不可の場合のみハイスコアを保存
-        if (!gameState.canContinue()) {
-            GameState.saveNewScore(context, gameState.solvedProblems)
-        }
+
+        // Always save the score regardless of continue status
+        GameState.saveNewScore(context, gameState.solvedProblems)
+
+        // Load the latest high scores after saving
+        val updatedHighScores = GameState.loadHighScores(context)
+        Log.d("GameScreen", "Updated high scores: $updatedHighScores")
+
+        // Update the game state with new high scores
         gameState = gameState.copy(
             gamePhase = GamePhase.GAME_OVER,
             isGameOver = true,
-            highScores = GameState.loadHighScores(context)
+            highScores = updatedHighScores
         )
     }
 

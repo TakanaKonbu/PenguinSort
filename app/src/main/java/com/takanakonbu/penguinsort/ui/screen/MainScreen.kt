@@ -8,6 +8,7 @@ import com.takanakonbu.penguinsort.ui.components.AdManager
 fun MainScreen(adManager: AdManager, soundManager: SoundManager) {
     var gameStarted by remember { mutableStateOf(false) }
     var retryFromGameOver by remember { mutableStateOf(false) }
+    var scoreUpdateTrigger by remember { mutableStateOf(0) }
 
     if (gameStarted && !retryFromGameOver) {
         GameScreen(
@@ -16,6 +17,8 @@ fun MainScreen(adManager: AdManager, soundManager: SoundManager) {
             onRetry = {
                 gameStarted = false
                 retryFromGameOver = true
+                // ゲーム終了時にトリガーを更新
+                scoreUpdateTrigger += 1
             }
         )
     } else {
@@ -23,7 +26,8 @@ fun MainScreen(adManager: AdManager, soundManager: SoundManager) {
             onStartClick = {
                 gameStarted = true
                 retryFromGameOver = false
-            }
+            },
+            scoreUpdateTrigger = scoreUpdateTrigger
         )
     }
 }

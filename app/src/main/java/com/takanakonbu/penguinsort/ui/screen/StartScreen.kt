@@ -23,12 +23,18 @@ import com.takanakonbu.penguinsort.ui.theme.GothicFontFamily
 import com.takanakonbu.penguinsort.ui.theme.PrimaryColor
 
 @Composable
-fun StartScreen(onStartClick: () -> Unit) {
+fun StartScreen(
+    onStartClick: () -> Unit,
+    scoreUpdateTrigger: Int // スコア更新のトリガーとして使用
+) {
     // State to track which screen is shown
     val showHowToPlay = remember { mutableStateOf(false) }
     val showScores = remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val highScores = remember { GameState.loadHighScores(context) }
+    // トリガーが変更されるたびにスコアを再読み込み
+    val highScores = remember(scoreUpdateTrigger) {
+        GameState.loadHighScores(context)
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Background image
@@ -101,7 +107,7 @@ fun StartScreen(onStartClick: () -> Unit) {
                 }
             }
             showHowToPlay.value -> {
-                // How to Play screen (existing code)
+                // How to Play screen
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -183,8 +189,7 @@ fun StartScreen(onStartClick: () -> Unit) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Row(
-                        ){
+                        Row {
                             Button(
                                 onClick = onStartClick,
                                 modifier = Modifier
@@ -215,7 +220,6 @@ fun StartScreen(onStartClick: () -> Unit) {
                                 )
                             }
                         }
-
 
                         Button(
                             onClick = { showScores.value = true },
